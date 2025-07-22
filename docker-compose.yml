@@ -11,7 +11,8 @@ services:
       - ./logs:/app/logs
       - ./secrets:/app/secrets
       - ./config:/app/config
-      - ./streamlit:/app/.streamlit
+      - /opt/apps/dog-walk-planner/secrets.toml:/app/.streamlit/secrets.toml:ro
+      - /opt/apps/dog-walk-planner/.env:/app/.env:ro
     environment:
       - STREAMLIT_SERVER_HEADLESS=true
       - STREAMLIT_SERVER_PORT=8501
