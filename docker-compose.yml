@@ -17,3 +17,9 @@ services:
       - STREAMLIT_SERVER_PORT=8501
       - STREAMLIT_SERVER_ADDRESS=0.0.0.0
     restart: unless-stopped
+    networks:
+      - media_network
+
+networks:
+  media_network:
+    external: true
