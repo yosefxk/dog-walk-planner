@@ -7,6 +7,7 @@ import { updateWalkSlot, updateConfig } from "@/app/actions"
 import { ChevronLeft, ChevronRight, Settings, LogOut } from "lucide-react"
 import { signOut } from "next-auth/react"
 import clsx from "clsx"
+import { motion, AnimatePresence } from "framer-motion"
 
 const WALK_SLOTS = ["Morning", "Afternoon", "Evening"]
 const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
@@ -78,16 +79,28 @@ export default function Calendar({ initialState, userEmail }: { initialState: Ap
     }
 
     return (
-      <button
+      <motion.button
         key={`${dateKey}-${slotIndex}`}
+        whileTap={{ scale: 0.93 }}
+        whileHover={{ scale: 1.02 }}
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
         onClick={() => handleSlotClick(dateKey, slotIndex)}
         className={clsx(
-          "h-12 w-full rounded-lg font-medium text-sm transition-all duration-200 shadow-sm border border-white/10 active:scale-95",
+          "h-12 w-full rounded-lg font-medium text-sm transition-colors duration-200 shadow-sm border border-white/10",
           colorClass
         )}
       >
-        {label}
-      </button>
+        <motion.span
+          key={label}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="inline-block"
+        >
+          {label}
+        </motion.span>
+      </motion.button>
     )
   }
 

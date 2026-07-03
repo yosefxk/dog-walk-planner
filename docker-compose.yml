@@ -8,6 +8,8 @@ services:
       - "6969:3000"
     volumes:
       - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
       - /opt/apps/dog-walk-planner/.env:/app/.env:ro
     restart: unless-stopped
     networks:
