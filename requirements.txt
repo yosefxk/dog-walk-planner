@@ -1,6 +1,0 @@
-streamlit[auth]>=1.42.0
-pandas
-python-dotenv
-httpx
-Authlib>=1.3.2
-streamlit-extras

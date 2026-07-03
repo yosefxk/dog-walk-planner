@@ -1,35 +1,36 @@
-# Dog Walk Planner
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A private Streamlit app for planning dog walks.
+## Getting Started
 
-## Features
+First, run the development server:
 
-- Optional Google OAuth authentication (see `REQUIRE_AUTH` in `app.py`)
-- Persistent walk schedule and user configuration
-- Dockerized for easy deployment
-- Color-coded interactive UI
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-## Quick Start
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-1. Clone the repo.
-2. Add your `.env` and `.streamlit/secrets.toml` (see example files, do not commit secrets).
-3. **Authentication:**  
-   By default, Google OAuth is required.  
-   To disable authentication, set `REQUIRE_AUTH = False` at the top of `app.py`.
-4. Build and run with Docker Compose:
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-   ```
-   docker compose up -d --build
-   ```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-5. Access the app at `http://localhost:6969` (or your configured port).
+## Learn More
 
-## Deployment
+To learn more about Next.js, take a look at the following resources:
 
-- For production, use Docker Compose or Portainer.
-- Data is persisted in the `data/` directory (mounted as a volume).
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## Security
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-- **Never commit `.env` or `.streamlit/secrets.toml` to git.**
-- Only allowed emails can access the app if authentication is enabled.
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
