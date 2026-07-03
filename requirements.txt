@@ -1,5 +1,7 @@
 streamlit>=1.42.0
+streamlit[auth]
 pandas
 python-dotenv
+httpx
 Authlib>=1.3.2
 streamlit-extras
