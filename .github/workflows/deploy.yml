@@ -1,36 +1,92 @@
-name: Build and Deploy
+name: Build and Publish Docker Image
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - name: Checkout repository
+      - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Metadata (Tags, Labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile
           push: true
-          tags: yosefxk/dog-walk-planner:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Trigger Portainer Webhook
+      - name: Connect to Tailscale
+        if: env.PORTAINER_WEBHOOK_URL != '' && env.TAILSCALE_AUTHKEY != ''
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+        env:
+          PORTAINER_WEBHOOK_URL: ${{ secrets.PORTAINER_WEBHOOK_URL }}
+          TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Trigger Portainer Redeploy Webhook
+        if: env.PORTAINER_WEBHOOK_URL != ''
+        continue-on-error: true
+        env:
+          PORTAINER_WEBHOOK_URL: ${{ secrets.PORTAINER_WEBHOOK_URL }}
         run: |
-          if [ -z "${{ secrets.PORTAINER_WEBHOOK_URL }}" ]; then
-            echo "PORTAINER_WEBHOOK_URL is not set. Skipping webhook trigger."
-            exit 1
+          if [[ ! "$PORTAINER_WEBHOOK_URL" =~ /api/stacks/webhooks/ ]]; then
+            echo "::warning::PORTAINER_WEBHOOK_URL does not look like a Portainer stack webhook endpoint"
           fi
-          curl -k -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
+          
+          if [[ "$PORTAINER_WEBHOOK_URL" == *\?* ]]; then
+            url_with_pull="${PORTAINER_WEBHOOK_URL}&pullImage=true"
+          else
+            url_with_pull="${PORTAINER_WEBHOOK_URL}?pullImage=true"
+          fi
+
+          status_code=$(curl -k -sS -o /tmp/portainer-response.txt -w "%{http_code}" -X POST "$url_with_pull" || true)
+          echo "HTTP status: $status_code"
+
+          if [[ "$status_code" -lt 200 || "$status_code" -ge 300 ]]; then
+            echo "::warning::Portainer webhook returned HTTP $status_code — check PORTAINER_WEBHOOK_URL secret"
+            echo "Response body:"
+            cat /tmp/portainer-response.txt || true
+          else
+            echo "Portainer redeploy triggered successfully"
+          fi
+
+
